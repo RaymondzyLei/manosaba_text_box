@@ -109,3 +109,22 @@
   - `cargo run -- --text "压缩PNG测试" --compress --out output_png_best.png`
 - 压缩 JPEG：
   - `cargo run -- --text "压缩JPEG测试" --format jpeg --quality 65 --out output_jpeg_65.jpg`
+
+## [0.1.4] - 2025-12-17
+
+### 新增
+- WebP 支持：
+  - 输入：启用 `image` 的 WebP 解码（`Cargo.toml` 开启 `webp` 特性），背景与角色可读取 `PNG/JPEG/WebP`。
+  - 输出：新增 `--format webp`，保存为 WebP；当前采用无损编码（`WebPEncoder::new_lossless`）。
+
+### 变更
+- 资源自动选择：
+  - 背景与角色的默认选择由“首个 PNG”扩展为“首个通用图片（PNG/JPEG/WebP）”。
+- CLI 文档与提示同步更新，README 覆盖 WebP 用法与注意事项。
+
+### 使用示例
+- WebP 输出：
+  - `cargo run -- --text "WebP输出测试" --format webp --out output.webp`
+
+### 兼容性
+- `--quality` 仅对 JPEG 生效；WebP 当前无损编码不支持质量参数。

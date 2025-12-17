@@ -5,15 +5,15 @@ use std::path::PathBuf;
 use clap::Parser;
 use image::Rgba;
 
-use crate::core::image_generator::{find_first_png, find_first_ttf, generate_image, GenerationParams};
+use crate::core::image_generator::{find_first_image, find_first_ttf, generate_image, GenerationParams};
 
 #[derive(Parser, Debug)]
 #[command(name = "text-to-picture")]
 #[command(about = "生成带文本的合成图片（后台核心）")]
 struct Args {
-    #[arg(long, value_name = "PATH", help = "背景图片路径（默认取 assets/background 下第一个 PNG）")]
+    #[arg(long, value_name = "PATH", help = "背景图片路径（支持 PNG/JPEG/WebP；默认取 assets/background 下第一个可用图片）")]
     background: Option<PathBuf>,
-    #[arg(long, value_name = "PATH", help = "角色图片路径（可选，默认取 assets/chara 下第一个 PNG）")]
+    #[arg(long, value_name = "PATH", help = "角色图片路径（支持 PNG/JPEG/WebP；可选，默认取 assets/chara 下第一个可用图片）")]
     character: Option<PathBuf>,
     #[arg(long = "char_width_pct", alias = "char-width-pct", value_name = "PERCENT", help = "角色叠加宽度占背景宽度的百分比（0-100）")]
     char_width_pct: Option<f32>,
@@ -37,7 +37,7 @@ struct Args {
     out: PathBuf,
     #[arg(long, help = "启用压缩（尽可能减小文件大小）")]
     compress: bool,
-    #[arg(long, value_name = "FORMAT", help = "输出格式（png 或 jpeg），默认根据 --out 扩展名或使用 png")]
+    #[arg(long, value_name = "FORMAT", help = "输出格式（png、jpeg 或 webp），默认根据 --out 扩展名或使用 png")]
     format: Option<String>,
     #[arg(long, value_name = "QUALITY", help = "JPEG 质量（1-100），默认 85；PNG 无该参数")]
     quality: Option<u8>,
@@ -49,8 +49,8 @@ fn main() {
     let assets = project_root.join("assets");
 
     let background = args.background.or_else(|| {
-        find_first_png(&assets.join("background"))
-    }).expect("未找到背景图片，请提供 --background 或确保 assets/background 下存在 PNG");
+        find_first_image(&assets.join("background"))
+    }).expect("未找到背景图片，请提供 --background 或确保 assets/background 下存在 PNG/JPEG/WebP");
 
     let character = args.character.or_else(|| {
         // 深度遍历 chara 子目录以寻找第一个 PNG
@@ -59,7 +59,7 @@ fn main() {
             it.find_map(|entry| {
                 let p = entry.ok()?.path();
                 if p.is_dir() {
-                    find_first_png(&p)
+                    find_first_image(&p)
                 } else {
                     None
                 }

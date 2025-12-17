@@ -126,6 +126,23 @@ pub fn find_first_png(dir: &Path) -> Option<PathBuf> {
         .min()
 }
 
+pub fn find_first_image(dir: &Path) -> Option<PathBuf> {
+    let exts = ["png", "jpg", "jpeg", "webp"];
+    std::fs::read_dir(dir)
+        .ok()?
+        .filter_map(|e| e.ok())
+        .map(|e| e.path())
+        .filter(|p| {
+            p.extension()
+                .map(|ext| {
+                    let ext = ext.to_string_lossy().to_lowercase();
+                    exts.contains(&ext.as_str())
+                })
+                .unwrap_or(false)
+        })
+        .min()
+}
+
 pub fn find_first_ttf(dir: &Path) -> Option<PathBuf> {
     std::fs::read_dir(dir)
         .ok()?
@@ -140,6 +157,7 @@ fn save_with_options(canvas: &RgbaImage, params: &GenerationParams) -> Result<()
     use std::io::BufWriter;
     use image::codecs::png::{CompressionType, FilterType, PngEncoder};
     use image::codecs::jpeg::JpegEncoder;
+    use image::codecs::webp::WebPEncoder;
     use image::ImageEncoder;
 
     let target_fmt = params.format.as_ref().map(|s| s.to_lowercase()).or_else(|| {
@@ -163,6 +181,16 @@ fn save_with_options(canvas: &RgbaImage, params: &GenerationParams) -> Result<()
                 rgb.push(p[2]);
             }
             enc.encode(&rgb, w, h, image::ColorType::Rgb8)?;
+        }
+        Some("webp") => {
+            let (w, h) = canvas.dimensions();
+            let enc = WebPEncoder::new_lossless(writer);
+            enc.write_image(
+                canvas.as_raw(),
+                w,
+                h,
+                image::ColorType::Rgba8,
+            )?;
         }
         _ => {
             if params.compress {
