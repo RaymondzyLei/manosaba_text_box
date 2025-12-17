@@ -114,8 +114,8 @@
 
 ### 新增
 - WebP 支持：
-  - 输入：启用 `image` 的 WebP 解码（`Cargo.toml` 开启 `webp` 特性），背景与角色可读取 `PNG/JPEG/WebP`。
-  - 输出：新增 `--format webp`，保存为 WebP；当前采用无损编码（`WebPEncoder::new_lossless`）。
+  - 输入：启用 `image` 的 WebP 解码（打开 `webp` 特性），背景与角色可读取 `PNG/JPEG/WebP`。
+  - 输出：新增 `--format webp`，保存为 WebP；支持有损编码与质量参数（`webp` crate，`Encoder::from_image(...).encode(quality)`）。
 
 ### 变更
 - 资源自动选择：
@@ -127,4 +127,4 @@
   - `cargo run -- --text "WebP输出测试" --format webp --out output.webp`
 
 ### 兼容性
-- `--quality` 仅对 JPEG 生效；WebP 当前无损编码不支持质量参数。
+- `--quality` 对 JPEG 与 WebP 生效；PNG 不支持质量参数。

@@ -346,7 +346,6 @@ dependencies = [
  "png",
  "qoi",
  "tiff",
- "webp",
 ]
 
 [[package]]
@@ -759,6 +758,7 @@ dependencies = [
  "imageproc",
  "rusttype",
  "thiserror",
+ "webp",
 ]
 
 [[package]]
@@ -837,6 +837,7 @@ version = "0.2.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4bb5d8e7814e92297b0e1c773ce43d290bef6c17452dafd9fc49e5edb5beba71"
 dependencies = [
+ "image",
  "libwebp-sys",
 ]
 

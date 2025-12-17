@@ -21,7 +21,7 @@ Rust 版「文本框生成器」后端核心：合成背景、角色与文本，
 - `--out PATH`：输出图片路径。默认 `output.png`。
 - `--compress`：启用 PNG 最佳压缩（尽可能减小文件大小）。
 - `--format FORMAT`：输出格式，可选 `png`、`jpeg` 或 `webp`。默认根据 `--out` 扩展名推断，无法推断时使用 `png`。
-- `--quality NUMBER`：JPEG质量（1–100），默认 `85`。仅当 `--format jpeg` 时生效；当前 WebP 采用无损编码，不支持质量参数。
+- `--quality NUMBER`：质量（1–100），默认 `85`。当 `--format jpeg` 或 `--format webp` 时生效；PNG 无该参数。
 
 ## 缩放与优先级
 - 角色尺寸：
@@ -46,8 +46,10 @@ Rust 版「文本框生成器」后端核心：合成背景、角色与文本，
   - `cargo run -- --text "压缩JPEG测试" --format jpeg --quality 65 --out output_jpeg_65.jpg`
 - 输出 WebP（无损编码）：
   - `cargo run -- --text "WebP输出测试" --format webp --out output.webp`
+- 输出 WebP（有损编码，质量 65）：
+  - `cargo run -- --text "WebP质量测试" --format webp --quality 65 --out output_q65.webp`
 
 ## 注意事项
 - JPEG 不支持透明通道；当前合成在背景上完成，保存时会自动丢弃 alpha。
-- WebP 当前采用无损编码以保证透明与质量；如需极致体积，可使用 `jpeg` 并降低 `--quality`。
+- WebP 采用可调质量的有损编码（保留透明），质量越低体积越小；如需极致体积可降低 `--quality`。
 - 为尽量减小体积，优先考虑 `--format jpeg` 并适当降低 `--quality`；若需无损与透明，使用 `--compress` + `png` 或 `webp`。

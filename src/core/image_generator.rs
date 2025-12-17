@@ -2,6 +2,7 @@ use std::path::{Path, PathBuf};
 
 use image::{imageops, DynamicImage, GenericImageView, ImageBuffer, Rgba, RgbaImage};
 use thiserror::Error;
+use std::io::Write;
 
 use crate::core::text_processor::{draw_multiline_text, load_font, wrap_text_to_width, Align, TextStyle};
 
@@ -13,6 +14,8 @@ pub enum GenError {
     Image(#[from] image::ImageError),
     #[error("font error: {0}")]
     Font(String),
+    #[error("webp error: {0}")]
+    Webp(String),
 }
 
 pub struct GenerationParams {
@@ -157,8 +160,8 @@ fn save_with_options(canvas: &RgbaImage, params: &GenerationParams) -> Result<()
     use std::io::BufWriter;
     use image::codecs::png::{CompressionType, FilterType, PngEncoder};
     use image::codecs::jpeg::JpegEncoder;
-    use image::codecs::webp::WebPEncoder;
     use image::ImageEncoder;
+    use webp::Encoder;
 
     let target_fmt = params.format.as_ref().map(|s| s.to_lowercase()).or_else(|| {
         params
@@ -167,7 +170,7 @@ fn save_with_options(canvas: &RgbaImage, params: &GenerationParams) -> Result<()
             .map(|e| e.to_string_lossy().to_lowercase())
     });
 
-    let writer = BufWriter::new(File::create(&params.output_path)?);
+    let mut writer = BufWriter::new(File::create(&params.output_path)?);
     match target_fmt.as_deref() {
         Some("jpeg") | Some("jpg") => {
             let quality = params.quality.unwrap_or(85).clamp(1, 100);
@@ -183,14 +186,11 @@ fn save_with_options(canvas: &RgbaImage, params: &GenerationParams) -> Result<()
             enc.encode(&rgb, w, h, image::ColorType::Rgb8)?;
         }
         Some("webp") => {
-            let (w, h) = canvas.dimensions();
-            let enc = WebPEncoder::new_lossless(writer);
-            enc.write_image(
-                canvas.as_raw(),
-                w,
-                h,
-                image::ColorType::Rgba8,
-            )?;
+            let quality = params.quality.unwrap_or(85).clamp(1, 100) as f32;
+            let img_dyn = DynamicImage::ImageRgba8(canvas.clone());
+            let enc = Encoder::from_image(&img_dyn).map_err(|e| GenError::Webp(e.to_string()))?;
+            let mem = enc.encode(quality);
+            writer.write_all(&*mem)?;
         }
         _ => {
             if params.compress {

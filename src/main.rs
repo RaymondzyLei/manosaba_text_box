@@ -39,7 +39,7 @@ struct Args {
     compress: bool,
     #[arg(long, value_name = "FORMAT", help = "输出格式（png、jpeg 或 webp），默认根据 --out 扩展名或使用 png")]
     format: Option<String>,
-    #[arg(long, value_name = "QUALITY", help = "JPEG 质量（1-100），默认 85；PNG 无该参数")]
+    #[arg(long, value_name = "QUALITY", help = "JPEG/WebP 质量（1-100），默认 85；PNG 无该参数")]
     quality: Option<u8>,
 }
 
